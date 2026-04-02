@@ -1,8 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Celo AI MiniPay Assistant</title>
-
-    <!-- TALENT VERIFICATION META TAG -->
+    
+    <!-- TALENT VERIFICATION META TAG (YENİ) -->
     <meta name="talentapp:project_verification" content="c82644878cc8be225d72e4222d1482dba6df19fa9648645d438f24588ec967cf5694fd7960c3793fc1be6aeb4e216e31d4511f922">
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: linear-gradient(135deg, #000, #111); 
+            color: #fff; 
+            text-align: center; 
+            padding: 60px 20px; 
+            margin: 0;
+        }
+        .container { max-width: 580px; margin: 0 auto; }
+        h1 { font-size: 2.2rem; margin-bottom: 8px; }
+        p { opacity: 0.9; margin-bottom: 40px; }
+        button { 
+            padding: 18px 32px; 
+            margin: 12px; 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            border: none; 
+            border-radius: 9999px; 
+            cursor: pointer; 
+            transition: all 0.3s;
+        }
+        .connect-btn { background: #00ff9d; color: #000; width: 320px; }
+        .connect-btn:hover { background: #00cc7a; transform: scale(1.05); }
+        .pay-btn { background: #ffd700; color: #000; width: 320px; }
+        .pay-btn:hover { background: #ffcc00; transform: scale(1.05); }
+        .status { margin: 30px auto; padding: 20px; background: #1a1a1a; border-radius: 16px; max-width: 420px; }
+        input { 
+            width: 100%; max-width: 420px; padding: 18px; 
+            margin: 20px auto; display: block; 
+            border: none; border-radius: 9999px; 
+            font-size: 1.1rem; text-align: center;
+        }
+    </style>
 </head>
+<body>
+    <div class="container">
+        <h1>🤖 Celo AI MiniPay Assistant</h1>
+        <p>MiniPay ile çalışan akıllı AI ödeme asistanı</p>
+
+        <button onclick="connectWallet()" class="connect-btn">🔗 Cüzdanı Bağla (Celo)</button>
+        
+        <div id="status" class="status">Cüzdan bağlı değil</div>
+        
+        <input id="reason" type="text" placeholder="Örnek: Kahve al, 0.5 CELO gönder" />
+        
+        <button onclick="payWithAI()" class="pay-btn">💰 AI ile Ödeme Yap</button>
+
+        <p style="margin-top: 50px; font-size: 14px; opacity: 0.6;">
+            Contract: 0xD53068aF7C3B6554Ae16fEBf282D1D524277f883
+        </p>
+    </div>
+
+    <script>
+        let signer, contract;
+        const contractAddress = "0xD53068aF7C3B6554Ae16fEBf282D1D524277f883";
+        const abi = [
+            "function payWithAI(string memory reason) public payable"
+        ];
+
+        async function connectWallet() {
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(contractAddress, abi, signer);
+                document.getElementById("status").innerHTML = "✅ Cüzdan bağlı! Artık ödeme yapabilirsin.";
+            } catch (e) {
+                alert("Cüzdan bağlantısı başarısız oldu.");
+            }
+        }
+
+        async function payWithAI() {
+            const reason = document.getElementById("reason").value.trim();
+            if (!reason) return alert("Lütfen bir ödeme nedeni girin!");
+
+            const amount = ethers.utils.parseEther("0.001"); // test için 0.001 CELO
+
+            try {
+                const tx = await contract.payWithAI(reason, { value: amount });
+                document.getElementById("status").innerHTML = `⏳ İşlem gönderildi...<br>Tx: ${tx.hash.substring(0,10)}...`;
+                await tx.wait();
+                document.getElementById("status").innerHTML = `✅ Ödeme tamamlandı!<br>Tx: ${tx.hash.substring(0,10)}...`;
+            } catch (error) {
+                console.error(error);
+                alert("İşlem iptal edildi veya hata oluştu.");
+            }
+        }
+    </script>
+</body>
+</html>
