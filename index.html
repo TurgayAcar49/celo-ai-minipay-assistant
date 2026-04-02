@@ -1,69 +1,8 @@
-<!DOCTYPE html>
-<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Celo AI MiniPay Assistant</title>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
-    <style>
-        body { font-family: system-ui; background: #000; color: #fff; text-align: center; padding: 40px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        input, button { padding: 15px; margin: 10px; width: 80%; max-width: 400px; border-radius: 12px; border: none; font-size: 18px; }
-        button { background: #00ff9d; color: #000; font-weight: bold; cursor: pointer; }
-        button:hover { background: #00cc7a; }
-        .status { margin: 20px; padding: 15px; border-radius: 12px; background: #111; }
-    </style>
+
+    <!-- TALENT VERIFICATION META TAG -->
+    <meta name="talentapp:project_verification" content="c82644878cc8be225d72e4222d1482dba6df19fa9648645d438f24588ec967cf5694fd7960c3793fc1be6aeb4e216e31d4511f922">
 </head>
-<body>
-    <div class="container">
-        <h1>🤖 Celo AI MiniPay Assistant</h1>
-        <p>MiniPay ile çalışan AI ödeme asistanı</p>
-        
-        <button onclick="connectWallet()">Cüzdanı Bağla (Celo)</button>
-        
-        <div id="status" class="status">Cüzdan bağlı değil</div>
-        
-        <input id="reason" type="text" placeholder="Örnek: Kahve al, 0.5 CELO gönder" />
-        
-        <button onclick="payWithAI()">💰 AI ile Ödeme Yap</button>
-        
-        <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">
-            Contract: 0xD53068aF7C3B6554Ae16fEBf282D1D524277f883
-        </p>
-    </div>
-
-    <script>
-        let signer, contract;
-        const contractAddress = "0xD53068aF7C3B6554Ae16fEBf282D1D524277f883";
-        const abi = [
-            "function payWithAI(string memory reason) public payable",
-            "event AIPayment(address indexed user, uint256 amount, string reason, uint256 timestamp)"
-        ];
-
-        async function connectWallet() {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
-            signer = provider.getSigner();
-            contract = new ethers.Contract(contractAddress, abi, signer);
-            document.getElementById("status").innerHTML = "✅ Cüzdan bağlı! Artık ödeme yapabilirsin.";
-        }
-
-        async function payWithAI() {
-            const reason = document.getElementById("reason").value.trim();
-            if (!reason) return alert("Lütfen bir ödeme nedeni gir!");
-
-            const amount = ethers.utils.parseEther("0.001"); // 0.001 CELO (test için)
-
-            try {
-                const tx = await contract.payWithAI(reason, { value: amount });
-                document.getElementById("status").innerHTML = `⏳ İşlem gönderildi...<br>Tx: ${tx.hash}`;
-                await tx.wait();
-                document.getElementById("status").innerHTML = `✅ Ödeme tamamlandı!<br>Tx: ${tx.hash}`;
-            } catch (error) {
-                console.error(error);
-                alert("İşlem iptal edildi veya hata oluştu.");
-            }
-        }
-    </script>
-</body>
-</html>
